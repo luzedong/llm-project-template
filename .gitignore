@@ -31,8 +31,8 @@ data/cache/*
 logs/
 *.log
 
-# 配置文件（包含敏感信息）
-config.py
+# 配置文件（包含敏感信息，仅忽略根目录）
+/config.py
 
 # 其他
 .pytest_cache/
