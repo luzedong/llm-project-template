@@ -12,6 +12,7 @@
 ## 🎯 核心规则（必须遵守）
 
 ### 规则 1: 目录结构
+
 ```
 项目根目录/
 ├── config.py          # 配置文件（已包含 API Keys）
@@ -20,11 +21,13 @@
 ```
 
 **约束：**
+
 - ✅ 所有业务脚本创建在 `scripts/` 目录
 - ❌ 不修改 `src/` 和 `config.py`（除非用户明确要求）
 - ❌ 不创建文档文件（`.md`）和 Shell 脚本（`.sh`）（除非用户明确要求）
 
 ### 规则 2: LLM 使用
+
 ```python
 # 创建 LLM（使用 config.py 中的默认配置）
 llm = create_llm()
@@ -35,8 +38,14 @@ llm = create_llm(provider="azure")  # azure, volcengine, aliyun, custom
 # 调用
 response = llm.chat(messages)  # 统一接口，返回字符串
 ```
+**重要约束：**
+
+- ✅ 所有 LLM 调用函数必须使用 `@retry_on_failure` 装饰器
+- ✅ 默认重试次数为 3 次（可通过 `config.MAX_RETRIES` 配置）
+- ✅ 重试机制会自动处理网络错误、超时、API 限流等临时性故障
 
 ### 规则 3: 标准脚本模板
+
 ```python
 """[脚本功能描述]"""
 import sys
@@ -76,11 +85,13 @@ if __name__ == "__main__":
 ### 规则 4: 命名规范
 
 **脚本命名：**
+
 - 简单任务：`{动词}_{对象}.py` 例：`process_data.py`
 - 复杂流程（Pipeline）：`{流程名}_pipeline.py` 例：`diagnosis_pipeline.py`
 - 多脚本步骤：`step{N}_{动词}_{对象}.py` 例：`step1_extract_info.py`
 
 **输出文件命名：**
+
 ```python
 # 格式：{输入名}_{处理类型}_{时间戳}.jsonl
 output = f"{input_name}_processed_{timestamp}.jsonl"
@@ -91,6 +102,7 @@ failed_output = f"{input_name}_failed_{timestamp}.jsonl"
 ```
 
 **命名约定：**
+
 - 小写 + 下划线（snake_case）
 - 时间戳格式：`YYYYMMDD_HHMMSS`
 - 避免缩写，使用完整单词
@@ -100,6 +112,7 @@ failed_output = f"{input_name}_failed_{timestamp}.jsonl"
 ## 📚 常用 API 参考
 
 ### 数据加载与保存
+
 ```python
 from src import DataLoader
 import config
@@ -118,6 +131,7 @@ output_loader.save_jsonl(results, "output.jsonl")
 ```
 
 ### 日志记录
+
 ```python
 logger.info("一般信息")
 logger.success("成功消息")  # 绿色
@@ -126,6 +140,7 @@ logger.error("错误")
 ```
 
 ### 并发处理
+
 ```python
 from concurrent.futures import ThreadPoolExecutor
 import config
@@ -136,6 +151,7 @@ with ThreadPoolExecutor(max_workers=config.MAX_WORKERS) as executor:
 ```
 
 ### 错误重试
+
 ```python
 from src.utils import retry_on_failure
 
@@ -151,20 +167,21 @@ def call_llm(messages):
 当用户提出需求时：
 
 1. **分析任务**
+
    - 确认使用的 Provider（默认见 config.py）
    - 确认输入/输出格式和位置
-
 2. **选择模式**
+
    - 简单任务 → 单脚本
    - 复杂流程但耦合紧 → Pipeline
    - 复杂流程需独立调试 → 多脚本
-
 3. **创建脚本**
+
    - 在 `scripts/` 目录创建
    - 使用标准模板
    - 遵循命名规范
-
 4. **提供使用说明**（直接文本回复用户）
+
    ```
    已创建：scripts/xxx.py
 
@@ -178,12 +195,12 @@ def call_llm(messages):
 
 ## ⚠️ 常见问题
 
-| 问题 | 解决方案 |
-|------|---------|
-| `ModuleNotFoundError: No module named 'src'` | 确保有路径设置代码 |
-| `ValueError: XXX_API_KEY is not set` | 检查 `config.py` 配置 |
-| LLM 调用失败 | 使用 `@retry_on_failure` 装饰器 |
-| 大文件内存溢出 | 使用 `loader.iter_jsonl()` 迭代加载 |
+| 问题                                           | 解决方案                              |
+| ---------------------------------------------- | ------------------------------------- |
+| `ModuleNotFoundError: No module named 'src'` | 确保有路径设置代码                    |
+| `ValueError: XXX_API_KEY is not set`         | 检查 `config.py` 配置               |
+| LLM 调用失败                                   | 使用 `@retry_on_failure` 装饰器     |
+| 大文件内存溢出                                 | 使用 `loader.iter_jsonl()` 迭代加载 |
 
 ---
 
@@ -202,6 +219,7 @@ def call_llm(messages):
 ---
 
 **核心原则：**
+
 - ✅ 编写 Python 业务脚本（`.py`）
 - ❌ 不修改框架代码
 - ❌ 不创建文档（`.md`）或 Shell 脚本（`.sh`），除非用户明确要求
