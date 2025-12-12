@@ -16,6 +16,7 @@
 ```
 项目根目录/
 ├── config.py          # 配置文件（已包含 API Keys）
+├── utils.py           # 项目级工具函数（可选）
 ├── src/               # 框架核心代码
 └── scripts/           # ⭐️ 你的工作目录
 ```
@@ -23,6 +24,7 @@
 **约束：**
 
 - ✅ 所有业务脚本创建在 `scripts/` 目录
+- ✅ 单个脚本不超过 1000 行，超过则将通用函数提取到根目录 `utils.py`
 - ❌ 不修改 `src/` 和 `config.py`（除非用户明确要求）
 - ❌ 不创建文档文件（`.md`）和 Shell 脚本（`.sh`）（除非用户明确要求）
 
@@ -59,6 +61,9 @@ sys.path.insert(0, str(project_root))
 from src import create_llm, setup_logger, DataLoader
 import config
 
+# 如果有项目级工具函数，从根目录 utils.py 导入
+# from utils import some_helper_function
+
 # 生成时间戳（用于日志和输出文件）
 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 logger = setup_logger(f"{Path(__file__).stem}_{timestamp}.log")
@@ -82,7 +87,40 @@ if __name__ == "__main__":
     main()
 ```
 
-### 规则 4: 命名规范
+### 规则 4: 代码组织规范
+
+**代码长度控制：**
+
+- ✅ 单个脚本不超过 1000 行代码
+- ✅ 当脚本接近或超过限制时，应重构代码
+- ✅ 将通用、可复用的函数提取到根目录 `utils.py` 文件
+
+**何时创建 utils.py：**
+
+1. 多个脚本使用相同的辅助函数
+2. 单个脚本超过 1000 行
+3. 有复杂的数据处理、格式转换等通用逻辑
+
+**utils.py 示例：**
+
+```python
+"""项目级工具函数"""
+from typing import List, Dict, Any
+from src.utils import retry_on_failure
+
+@retry_on_failure(max_retries=3)
+def process_complex_data(data: Dict[str, Any]) -> Dict[str, Any]:
+    """复杂数据处理逻辑"""
+    # 实现通用处理逻辑
+    pass
+
+def format_output(result: Any) -> str:
+    """统一输出格式化"""
+    # 实现格式化逻辑
+    pass
+```
+
+### 规则 5: 命名规范
 
 **脚本命名：**
 
@@ -207,6 +245,7 @@ def call_llm(messages):
 ## ✅ 代码提交检查清单
 
 - [ ] 脚本在 `scripts/` 目录
+- [ ] 单个脚本不超过 1000 行（超过则提取函数到 utils.py）
 - [ ] 命名符合规范
 - [ ] 包含路径设置代码
 - [ ] 使用 `create_llm()` 创建 LLM
